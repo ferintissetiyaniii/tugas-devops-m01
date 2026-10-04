@@ -5,3 +5,4 @@ __pycache__/
 *.log
 app.log
 ringkasan-log.txt
+kredensial-*.txt
