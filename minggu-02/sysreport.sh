@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+#!/usr/bin/env bash
+set -euo pipefail
+
 SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_NAME
+
 VERSION="1.0.0"
 readonly VERSION
+
 FORMAT="text"
 THRESHOLD_DISK=80
 
@@ -13,14 +18,13 @@ die() { log "GALAT: $*"; exit 1; }
 
 usage() {
   cat <<USAGE
-$SCRIPT_NAME v$VERSION - laporan kesehatan sistem
-
+$SCRIPT_NAME v$VERSION - Laporan kesehatan sistem
 Penggunaan: $SCRIPT_NAME [OPSI]
-  -d N      Ambang peringatan pemakaian disk dalam persen (default: 80)
-  -j        Keluarkan hasil dalam format JSON
-  -h        Tampilkan bantuan ini
+  -d N      Ambang pemakaian disk dalam % (baku: 80)
+  -j        Keluarkan dalam format JSON
+  -h        Tampilkan bantuan
 
-Exit code: 0 = sehat, 2 = melewati ambang, 1 = galat penggunaan
+Exit code: 0=sehat, 2=melewati ambang, 1=galat
 USAGE
 }
 
@@ -35,11 +39,11 @@ main() {
       j) FORMAT="json" ;;
       h) usage; exit 0 ;;
       \?) usage >&2; die "opsi tidak dikenal: -$OPTARG" ;;
-      :) die "opsi -$OPTARG membutuhkan argumen" ;;
+      :) usage >&2; die "opsi -$OPTARG butuh argumen" ;;
     esac
   done
 
-  [[ "$THRESHOLD_DISK" =~ ^[0-9]+$ ]] || die "ambang disk harus berupa angka"
+  [[ "$THRESHOLD_DISK" =~ ^[0-9]+$ ]] || die "ambang disk harus angka"
 
   local disk mem procs status
   disk="$(disk_usage_pct)"
@@ -53,11 +57,11 @@ main() {
     printf '{"host":"%s","disk_pct":%s,"mem_pct":%s,"proc":%s,"status":"%s"}\n' \
       "$(hostname)" "$disk" "$mem" "$procs" "$status"
   else
-    printf '%-20s : %s\n' 'Host' "$(hostname)"
-    printf '%-20s : %s\n' 'Jumlah proses' "$procs"
-    printf '%-20s : %s%%\n' 'Pemakaian disk' "$disk"
-    printf '%-20s : %s%%\n' 'Pemakaian memori' "$mem"
-    printf '%-20s : %s\n' 'Status' "$status"
+    printf '%-20s : %s\n' "Host" "$(hostname)"
+    printf '%-20s : %s\n' "Jumlah proses" "$procs"
+    printf '%-20s : %s%%\n' "Pemakaian disk" "$disk"
+    printf '%-20s : %s%%\n' "Pemakaian memori" "$mem"
+    printf '%-20s : %s\n' "Status" "$status"
   fi
 
   [[ "$status" == "OK" ]] || return 2
